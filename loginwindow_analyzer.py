@@ -19,13 +19,32 @@ class LoginwindowLogAnalyzer:
         self.log_entries = []
 
     def get_loginwindow_logs(self, days_back=7):
-        """指定された日数分のloginwindowログを取得"""
+        """指定された日数分のloginwindowログを取得（午前5時区切り）"""
         try:
+            # 現在時刻から午前5時区切りで指定日数分のログを取得
+            now = datetime.now()
+
+            # 今日の午前5時を基準に計算
+            if now.hour < 5:
+                # 現在時刻が午前5時前の場合、昨日の午前5時を基準とする
+                base_time = now.replace(hour=5, minute=0, second=0, microsecond=0) - timedelta(days=1)
+            else:
+                # 現在時刻が午前5時以降の場合、今日の午前5時を基準とする
+                base_time = now.replace(hour=5, minute=0, second=0, microsecond=0)
+
+            # 指定日数分前の午前5時を計算
+            start_time = base_time - timedelta(days=days_back)
+
+                        # ログ取得期間を計算（時間単位）
+            hours_back = int((now - start_time).total_seconds() / 3600)
+
+            print(f"ログ取得期間: {start_time.strftime('%Y-%m-%d %H:%M')} から {now.strftime('%Y-%m-%d %H:%M')} ({hours_back}時間)")
+
             # log showコマンドでloginwindow関連のログを取得
             cmd = [
                 'log', 'show',
                 '--predicate', 'process == "loginwindow"',
-                '--last', f'{days_back}d',
+                '--last', f'{hours_back}h',
                 '--style', 'json'
             ]
 
