@@ -9,6 +9,23 @@ macOSのloginwindowログを解析して、日毎の画面開始・終了時間�
 - 開始・終了イベントの回数も記録
 - 結果をCSVファイルに出力
 - 詳細なログ表示オプション
+- **高度な解析機能**（セッション時間計算、統計情報、グラフ生成）
+
+## ツール構成
+
+### 1. 基本的な解析ツール (`loginwindow_analyzer.py`)
+
+- シンプルな日毎の開始・終了時間集計
+- CSVファイル出力
+- 基本的な統計情報
+
+### 2. 高度な解析ツール (`advanced_loginwindow_analyzer.py`)
+
+- セッション時間の詳細計算
+- 統計情報の生成（平均、中央値、標準偏差など）
+- グラフとチャートの自動生成
+- 時間帯別・曜日別の分析
+- より詳細なCSV出力とJSON統計ファイル
 
 ## セットアップ
 
@@ -30,6 +47,7 @@ rye sync
 
 ```bash
 chmod +x loginwindow_analyzer.py
+chmod +x advanced_loginwindow_analyzer.py
 ```
 
 ## 使用方法
@@ -42,13 +60,33 @@ chmod +x loginwindow_analyzer.py
 python loginwindow_analyzer.py
 ```
 
+### 高度な解析
+
+過去7日分のログを詳細解析（グラフ付き）:
+
+```bash
+python advanced_loginwindow_analyzer.py
+```
+
 ### オプション
+
+#### 基本ツール (`loginwindow_analyzer.py`)
 
 - `--days, -d`: 分析する日数（デフォルト: 7日）
 - `--output, -o`: 出力CSVファイル名（デフォルト: loginwindow_analysis.csv）
 - `--verbose, -v`: 詳細なログを表示
 
+#### 高度なツール (`advanced_loginwindow_analyzer.py`)
+
+- `--days, -d`: 分析する日数（デフォルト: 7日）
+- `--output, -o`: 出力CSVファイル名（デフォルト: advanced_loginwindow_analysis.csv）
+- `--output-dir`: グラフ出力ディレクトリ（デフォルト: 現在のディレクトリ）
+- `--verbose, -v`: 詳細なログを表示
+- `--no-graphs`: グラフ生成をスキップ
+
 ### 使用例
+
+#### 基本ツール
 
 過去30日分のログを解析:
 
@@ -68,9 +106,31 @@ python loginwindow_analyzer.py --output my_analysis.csv
 python loginwindow_analyzer.py --verbose
 ```
 
+#### 高度なツール
+
+過去30日分のログを詳細解析:
+
+```bash
+python advanced_loginwindow_analyzer.py --days 30
+```
+
+グラフなしで解析:
+
+```bash
+python advanced_loginwindow_analyzer.py --no-graphs
+```
+
+グラフを別ディレクトリに出力:
+
+```bash
+python advanced_loginwindow_analyzer.py --output-dir ./graphs
+```
+
 ## 出力形式
 
-### コンソール出力
+### 基本ツールの出力
+
+#### コンソール出力
 
 ```text
 === 日毎の画面開始・終了時間サマリー ===
@@ -84,7 +144,7 @@ python loginwindow_analyzer.py --verbose
 ...
 ```
 
-### CSVファイル出力
+#### CSVファイル出力
 
 - `date`: 日付
 - `first_start_time`: その日の最初の開始時間
@@ -94,11 +154,56 @@ python loginwindow_analyzer.py --verbose
 - `start_count`: 開始イベントの回数
 - `end_count`: 終了イベントの回数
 
+### 高度なツールの出力
+
+#### コンソール出力
+
+```text
+============================================================
+詳細なLoginwindowログ解析結果
+============================================================
+
+📊 基本統計:
+  分析期間: 2024-01-01 から 2024-01-07
+  総日数: 7 日
+  アクティブ日数: 7 日
+  総セッション数: 35 回
+  1日平均セッション数: 5.0 回
+  平均セッション時間: 180.5 分
+  総使用時間: 105.3 時間
+  最も多い開始時間帯: 9時
+
+⏰ セッション時間の統計:
+  最短セッション: 5.2 分
+  最長セッション: 480.0 分
+  中央値: 165.0 分
+  標準偏差: 120.3 分
+```
+
+#### 生成されるファイル
+
+1. **CSVファイル**: 詳細な日毎データ
+2. **JSONファイル**: 統計情報
+3. **グラフファイル**:
+   - `daily_usage.png`: 日毎の使用時間
+   - `hourly_sessions.png`: 時間帯別のセッション開始回数
+   - `session_duration_distribution.png`: セッション時間の分布
+   - `weekday_pattern.png`: 曜日別のセッション開始回数
+
+## テスト
+
+テストスクリプトを実行して動作確認:
+
+```bash
+python test_analyzer.py
+```
+
 ## 注意事項
 
 - このツールは管理者権限が必要な場合があります
 - ログの取得には`log show`コマンドを使用します
 - システムの設定によっては、一部のログが取得できない場合があります
+- グラフ生成には`matplotlib`と`seaborn`が必要です
 
 ## トラブルシューティング
 
@@ -119,6 +224,20 @@ log show --predicate 'process == "loginwindow"' --last 1d
 ### イベントが検出されない場合
 
 `--verbose`オプションを使用して、実際に取得されているログメッセージを確認してください。必要に応じて、`loginwindow_analyzer.py`の`start_patterns`と`end_patterns`を調整してください。
+
+### グラフが生成されない場合
+
+1. 依存関係が正しくインストールされているか確認:
+
+```bash
+rye sync
+```
+
+2. `--no-graphs`オプションを使用してグラフ生成をスキップ:
+
+```bash
+python advanced_loginwindow_analyzer.py --no-graphs
+```
 
 ## ライセンス
 
