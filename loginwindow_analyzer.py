@@ -61,14 +61,30 @@ class LoginwindowLogAnalyzer:
             r'screen.*unlock',
             r'loginwindow.*start',
             r'display.*wake',
-            r'wake.*display'
+            r'wake.*display',
+            r'sessionunlocked.*1',  # セッションがアンロックされた
+            r'screenislocked.*0',   # 画面がアンロックされた
+            r'loginwindow.*login',
+            r'user.*login',
+            r'loginwindow.*unlock',
+            r'loginwindow.*wake',
+            r'loginwindow.*resume',
+            r'loginwindow.*activate'
         ]
 
         end_patterns = [
             r'screen.*lock',
             r'loginwindow.*stop',
             r'display.*sleep',
-            r'sleep.*display'
+            r'sleep.*display',
+            r'sessionunlocked.*0',  # セッションがロックされた
+            r'screenislocked.*1',   # 画面がロックされた
+            r'loginwindow.*logout',
+            r'user.*logout',
+            r'loginwindow.*lock',
+            r'loginwindow.*sleep',
+            r'loginwindow.*suspend',
+            r'loginwindow.*deactivate'
         ]
 
         for entry in self.log_entries:
@@ -90,6 +106,10 @@ class LoginwindowLogAnalyzer:
 
                     timestamp = datetime.fromisoformat(timestamp_str)
                 else:
+                    continue
+
+                # クラムシェルイベントを除外
+                if 'clamshell' in message:
                     continue
 
                 # 開始イベントかチェック

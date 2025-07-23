@@ -97,7 +97,13 @@ class AdvancedLoginwindowAnalyzer:
             r'user.*login',
             r'session.*start',
             r'windowserver.*start',
-            r'display.*power.*on'
+            r'display.*power.*on',
+            r'sessionunlocked.*1',  # セッションがアンロックされた
+            r'screenislocked.*0',   # 画面がアンロックされた
+            r'loginwindow.*unlock',
+            r'loginwindow.*wake',
+            r'loginwindow.*resume',
+            r'loginwindow.*activate'
         ]
 
         end_patterns = [
@@ -109,7 +115,13 @@ class AdvancedLoginwindowAnalyzer:
             r'user.*logout',
             r'session.*end',
             r'windowserver.*stop',
-            r'display.*power.*off'
+            r'display.*power.*off',
+            r'sessionunlocked.*0',  # セッションがロックされた
+            r'screenislocked.*1',   # 画面がロックされた
+            r'loginwindow.*lock',
+            r'loginwindow.*sleep',
+            r'loginwindow.*suspend',
+            r'loginwindow.*deactivate'
         ]
 
         for entry in self.log_entries:
@@ -131,6 +143,10 @@ class AdvancedLoginwindowAnalyzer:
 
                     timestamp = datetime.fromisoformat(timestamp_str)
                 else:
+                    continue
+
+                # クラムシェルイベントを除外
+                if 'clamshell' in message:
                     continue
 
                 # 開始イベントかチェック
