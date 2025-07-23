@@ -106,41 +106,15 @@ class AdvancedLoginwindowAnalyzer:
         """ログエントリを解析して画面開始・終了イベントを抽出"""
         events = []
 
-        # より詳細なパターンマッチング
+        # 画面開始・終了を示すキーワードパターン（setScreenIsLockedのみ）
         start_patterns = [
-            r'screen.*unlock',
-            r'loginwindow.*start',
-            r'display.*wake',
-            r'wake.*display',
-            r'loginwindow.*login',
-            r'user.*login',
-            r'session.*start',
-            r'windowserver.*start',
-            r'display.*power.*on',
-            r'sessionunlocked.*1',  # セッションがアンロックされた
-            r'screenislocked.*0',   # 画面がアンロックされた
-            r'loginwindow.*unlock',
-            r'loginwindow.*wake',
-            r'loginwindow.*resume',
-            r'loginwindow.*activate'
+            r'setscreenislocked.*0',     # 画面をアンロックに設定
+            r'setscreenisl.*0'           # 画面をアンロックに設定（短縮形）
         ]
 
         end_patterns = [
-            r'screen.*lock',
-            r'loginwindow.*stop',
-            r'display.*sleep',
-            r'sleep.*display',
-            r'loginwindow.*logout',
-            r'user.*logout',
-            r'session.*end',
-            r'windowserver.*stop',
-            r'display.*power.*off',
-            r'sessionunlocked.*0',  # セッションがロックされた
-            r'screenislocked.*1',   # 画面がロックされた
-            r'loginwindow.*lock',
-            r'loginwindow.*sleep',
-            r'loginwindow.*suspend',
-            r'loginwindow.*deactivate'
+            r'setscreenislocked.*1',     # 画面をロックに設定
+            r'setscreenisl.*1'           # 画面をロックに設定（短縮形）
         ]
 
         for entry in self.log_entries:
