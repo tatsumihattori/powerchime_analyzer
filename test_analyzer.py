@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Loginwindow Log Analyzer Test Script
+PowerChime Log Analyzer Test Script
 
-ログ解析スクリプトの動作をテストします。
+PowerChimeログ解析スクリプトの動作をテストします。
 """
 
 import subprocess
@@ -12,8 +12,8 @@ from pathlib import Path
 
 
 def test_basic_analyzer():
-    """基本的なログ解析スクリプトをテスト"""
-    print("🧪 基本的なログ解析スクリプトをテスト中...")
+    """基本的なPowerChimeログ解析スクリプトをテスト"""
+    print("🧪 基本的なPowerChimeログ解析スクリプトをテスト中...")
 
     try:
         # 過去1日分のログでテスト
@@ -25,21 +25,21 @@ def test_basic_analyzer():
         ], capture_output=True, text=True, timeout=60)
 
         if result.returncode == 0:
-            print("✅ 基本的なログ解析スクリプト: 成功")
+            print("✅ 基本的なPowerChimeログ解析スクリプト: 成功")
             print(f"出力: {result.stdout}")
         else:
-            print("❌ 基本的なログ解析スクリプト: 失敗")
+            print("❌ 基本的なPowerChimeログ解析スクリプト: 失敗")
             print(f"エラー: {result.stderr}")
 
     except subprocess.TimeoutExpired:
-        print("⏰ 基本的なログ解析スクリプト: タイムアウト")
+        print("⏰ 基本的なPowerChimeログ解析スクリプト: タイムアウト")
     except Exception as e:
-        print(f"❌ 基本的なログ解析スクリプト: エラー - {e}")
+        print(f"❌ 基本的なPowerChimeログ解析スクリプト: エラー - {e}")
 
 
 def test_advanced_analyzer():
-    """高度なログ解析スクリプトをテスト"""
-    print("\n🧪 高度なログ解析スクリプトをテスト中...")
+    """高度なPowerChimeログ解析スクリプトをテスト"""
+    print("\n🧪 高度なPowerChimeログ解析スクリプトをテスト中...")
 
     try:
         # 過去1日分のログでテスト（グラフなし）
@@ -52,49 +52,87 @@ def test_advanced_analyzer():
         ], capture_output=True, text=True, timeout=60)
 
         if result.returncode == 0:
-            print("✅ 高度なログ解析スクリプト: 成功")
+            print("✅ 高度なPowerChimeログ解析スクリプト: 成功")
             print(f"出力: {result.stdout}")
         else:
-            print("❌ 高度なログ解析スクリプト: 失敗")
+            print("❌ 高度なPowerChimeログ解析スクリプト: 失敗")
             print(f"エラー: {result.stderr}")
 
     except subprocess.TimeoutExpired:
-        print("⏰ 高度なログ解析スクリプト: タイムアウト")
+        print("⏰ 高度なPowerChimeログ解析スクリプト: タイムアウト")
     except Exception as e:
-        print(f"❌ 高度なログ解析スクリプト: エラー - {e}")
+        print(f"❌ 高度なPowerChimeログ解析スクリプト: エラー - {e}")
 
 
 def test_log_access():
-    """ログアクセスの権限をテスト"""
-    print("\n🔍 ログアクセスの権限をテスト中...")
+    """PowerChimeログアクセスをテスト"""
+    print("\n🔋 PowerChimeログアクセスをテスト中...")
 
     try:
-        # 基本的なログコマンドをテスト
+        # PowerChimeログが取得できるかテスト
         result = subprocess.run([
             'log', 'show',
-            '--predicate', 'process == "loginwindow"',
+            '--predicate', 'process == "PowerChime"',
             '--last', '1h',
             '--style', 'json'
         ], capture_output=True, text=True, timeout=30)
 
         if result.returncode == 0:
-            print("✅ ログアクセス: 成功")
+            print("✅ PowerChimeログアクセス: 成功")
             logs = result.stdout.strip()
-            if logs:
-                print(f"取得したログ数: {len(logs.splitlines())}")
+            if logs and logs != '[]':
+                print(f"  取得したログ数: {len(logs.split('}')) - 1}")
             else:
-                print("⚠️  ログが空です（過去1時間にloginwindowログがない可能性）")
+                print("  警告: ログが空です")
         else:
-            print("❌ ログアクセス: 失敗")
+            print("❌ PowerChimeログアクセス: 失敗")
             print(f"エラー: {result.stderr}")
-            print("💡 管理者権限で実行してみてください: sudo python test_analyzer.py")
 
     except subprocess.TimeoutExpired:
-        print("⏰ ログアクセス: タイムアウト")
-    except FileNotFoundError:
-        print("❌ ログアクセス: 'log'コマンドが見つかりません（macOSが必要です）")
+        print("⏰ PowerChimeログアクセス: タイムアウト")
     except Exception as e:
-        print(f"❌ ログアクセス: エラー - {e}")
+        print(f"❌ PowerChimeログアクセス: エラー - {e}")
+
+
+def test_wake_sleep_events():
+    """Wake/Sleepイベントの検出をテスト"""
+    print("\n🔋 Wake/Sleepイベントの検出をテスト中...")
+
+    try:
+        # 過去1時間のPowerChimeログからWake/Sleepイベントを検索
+        result = subprocess.run([
+            'log', 'show',
+            '--predicate', 'process == "PowerChime"',
+            '--last', '1h',
+            '--style', 'json'
+        ], capture_output=True, text=True, timeout=30)
+
+        if result.returncode == 0:
+            import json
+            try:
+                logs = json.loads(result.stdout)
+                wake_count = 0
+                sleep_count = 0
+
+                for log in logs:
+                    if 'eventMessage' in log:
+                        message = log['eventMessage'].lower()
+                        if 'did wake' in message:
+                            wake_count += 1
+                        elif 'did sleep' in message:
+                            sleep_count += 1
+
+                print(f"✅ Wake/Sleepイベント検出: 成功")
+                print(f"  Wakeイベント: {wake_count}件")
+                print(f"  Sleepイベント: {sleep_count}件")
+
+            except json.JSONDecodeError:
+                print("❌ Wake/Sleepイベント検出: JSON解析エラー")
+        else:
+            print("❌ Wake/Sleepイベント検出: ログ取得失敗")
+
+    except Exception as e:
+        print(f"❌ Wake/Sleepイベント検出: エラー - {e}")
 
 
 def cleanup_test_files():
@@ -107,38 +145,36 @@ def cleanup_test_files():
         'test_advanced_output_stats.json'
     ]
 
-    for file_path in test_files:
-        if os.path.exists(file_path):
-            os.remove(file_path)
-            print(f"削除: {file_path}")
+    for file in test_files:
+        if os.path.exists(file):
+            os.remove(file)
+            print(f"  削除: {file}")
+        else:
+            print(f"  存在しない: {file}")
 
 
 def main():
-    """メインのテスト関数"""
-    print("Loginwindow Log Analyzer テスト開始")
+    """メインテスト実行"""
+    print("🔋 PowerChime Log Analyzer テスト開始")
     print("=" * 50)
-
-    # スクリプトファイルの存在確認
-    required_files = ['loginwindow_analyzer.py', 'advanced_loginwindow_analyzer.py']
-    for file_path in required_files:
-        if not os.path.exists(file_path):
-            print(f"❌ 必要なファイルが見つかりません: {file_path}")
-            return
 
     # ログアクセステスト
     test_log_access()
 
-    # 基本的なログ解析テスト
+    # Wake/Sleepイベント検出テスト
+    test_wake_sleep_events()
+
+    # 基本的な解析スクリプトテスト
     test_basic_analyzer()
 
-    # 高度なログ解析テスト
+    # 高度な解析スクリプトテスト
     test_advanced_analyzer()
 
-    # クリーンアップ
+    # テストファイルクリーンアップ
     cleanup_test_files()
 
     print("\n" + "=" * 50)
-    print("テスト完了")
+    print("🔋 PowerChime Log Analyzer テスト完了")
 
 
 if __name__ == '__main__':

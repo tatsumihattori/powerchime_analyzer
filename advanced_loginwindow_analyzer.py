@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Advanced Loginwindow Log Analyzer
+PowerChime Log Analyzer
 
-macOSのloginwindowログを詳細に解析して、統計情報やグラフを生成します。
+macOSのPowerChimeログを詳細に解析して、統計情報やグラフを生成します。
 """
 
 import subprocess
@@ -18,14 +18,13 @@ import seaborn as sns
 from collections import defaultdict
 import calendar
 
-
-class AdvancedLoginwindowAnalyzer:
+class PowerChimeAnalyzer:
     def __init__(self):
-        self.log_entries = []
+        self.powerchime_entries = []
         self.events = []
 
-    def get_loginwindow_logs(self, days_back=7):
-        """指定された日数分のloginwindowログを取得（午前5時区切り）"""
+    def get_powerchime_logs(self, days_back=7):
+        """指定された日数分のPowerChimeログを取得"""
         try:
             # 現在時刻から午前5時区切りで指定日数分のログを取得
             now = datetime.now()
@@ -41,51 +40,25 @@ class AdvancedLoginwindowAnalyzer:
             # 指定日数分前の午前5時を計算
             start_time = base_time - timedelta(days=days_back)
 
-                        # ログ取得期間を計算（時間単位）
+            # ログ取得期間を計算（時間単位）
             hours_back = int((now - start_time).total_seconds() / 3600)
 
-            print(f"ログ取得期間: {start_time.strftime('%Y-%m-%d %H:%M')} から {now.strftime('%Y-%m-%d %H:%M')} ({hours_back}時間)")
+            print(f"PowerChimeログ取得期間: {start_time.strftime('%Y-%m-%d %H:%M')} から {now.strftime('%Y-%m-%d %H:%M')} ({hours_back}時間)")
 
-            # より広範囲のログを取得
-            predicates = [
-                'process == "loginwindow"',
-                'process == "WindowServer"',
-                'process == "Dock"',
-                'subsystem == "com.apple.loginwindow"',
-                'subsystem == "com.apple.windowserver"'
+            # PowerChimeログを取得
+            cmd = [
+                'log', 'show',
+                '--predicate', 'process == "PowerChime"',
+                '--last', f'{hours_back}h',
+                '--style', 'json'
             ]
 
-            all_logs = []
-            for predicate in predicates:
-                try:
-                    cmd = [
-                        'log', 'show',
-                        '--predicate', predicate,
-                        '--last', f'{hours_back}h',
-                        '--style', 'json'
-                    ]
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            logs = json.loads(result.stdout)
 
-                    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-                    logs = json.loads(result.stdout)
-                    all_logs.extend(logs)
-
-                except subprocess.CalledProcessError:
-                    continue
-                except json.JSONDecodeError:
-                    continue
-
-            # 重複を除去
-            seen = set()
-            unique_logs = []
-            for entry in all_logs:
-                key = f"{entry.get('timestamp', '')}-{entry.get('eventMessage', '')}"
-                if key not in seen:
-                    seen.add(key)
-                    unique_logs.append(entry)
-
-            for entry in unique_logs:
+            for entry in logs:
                 if 'eventMessage' in entry:
-                    self.log_entries.append({
+                    self.powerchime_entries.append({
                         'timestamp': entry.get('timestamp', ''),
                         'message': entry['eventMessage'],
                         'process': entry.get('process', ''),
@@ -94,39 +67,38 @@ class AdvancedLoginwindowAnalyzer:
                         'level': entry.get('level', '')
                     })
 
-            print(f"取得したログエントリ数: {len(self.log_entries)}")
+            print(f"取得したPowerChimeログエントリ数: {len(self.powerchime_entries)}")
 
         except Exception as e:
-            print(f"ログ取得エラー: {e}")
+            print(f"PowerChimeログ取得エラー: {e}")
             return False
 
         return True
 
     def parse_log_entries(self):
-        """ログエントリを解析して画面開始・終了イベントを抽出"""
+        """ログエントリを解析してWake/Sleepイベントを抽出"""
         events = []
 
-        # 画面開始・終了を示すキーワードパターン（setScreenIsLockedのみ）
-        start_patterns = [
-            r'setscreenislocked.*0',     # 画面をアンロックに設定
-            r'setscreenisl.*0'           # 画面をアンロックに設定（短縮形）
+        # PowerChimeのWake/Sleepパターン
+        wake_patterns = [
+            r'did wake',
+            r'didwake'
         ]
 
-        end_patterns = [
-            r'setscreenislocked.*1',     # 画面をロックに設定
-            r'setscreenisl.*1'           # 画面をロックに設定（短縮形）
+        sleep_patterns = [
+            r'did sleep',
+            r'didsleep'
         ]
 
-        for entry in self.log_entries:
+        # PowerChimeログを解析
+        for entry in self.powerchime_entries:
             message = entry['message'].lower()
             timestamp_str = entry['timestamp']
 
             try:
-                # タイムスタンプを解析（macOSのログ形式に対応）
-                # 例: "2025-07-23 16:27:06.105357+0900"
+                # タイムスタンプを解析
                 if timestamp_str:
                     # タイムゾーン情報を標準形式に変換
-                    # "+0900" -> "+09:00"
                     if '+' in timestamp_str and len(timestamp_str.split('+')[1]) == 4:
                         timezone_part = timestamp_str.split('+')[1]
                         timestamp_str = timestamp_str.replace(f"+{timezone_part}", f"+{timezone_part[:2]}:{timezone_part[2:]}")
@@ -138,45 +110,40 @@ class AdvancedLoginwindowAnalyzer:
                 else:
                     continue
 
-                # クラムシェルイベントを除外
-                if 'clamshell' in message:
-                    continue
-
-                # 開始イベントかチェック
-                is_start = any(re.search(pattern, message) for pattern in start_patterns)
-                # 終了イベントかチェック
-                is_end = any(re.search(pattern, message) for pattern in end_patterns)
+                # Wakeイベントかチェック
+                is_wake = any(re.search(pattern, message) for pattern in wake_patterns)
+                # Sleepイベントかチェック
+                is_sleep = any(re.search(pattern, message) for pattern in sleep_patterns)
 
                 # 午前5時を1日の区切りとして日付を取得
-                # 午前5時前は前日として扱う
                 if timestamp.hour < 5:
                     date = timestamp.date() - timedelta(days=1)
                 else:
                     date = timestamp.date()
 
-                if is_start:
+                if is_wake:
                     events.append({
                         'date': date,
                         'time': timestamp.time(),
                         'timestamp': timestamp,
-                        'event_type': 'start',
+                        'event_type': 'wake',
                         'message': entry['message'],
                         'process': entry['process'],
                         'subsystem': entry['subsystem']
                     })
-                elif is_end:
+                elif is_sleep:
                     events.append({
                         'date': date,
                         'time': timestamp.time(),
                         'timestamp': timestamp,
-                        'event_type': 'end',
+                        'event_type': 'sleep',
                         'message': entry['message'],
                         'process': entry['process'],
                         'subsystem': entry['subsystem']
                     })
 
             except ValueError as e:
-                print(f"タイムスタンプ解析エラー: {timestamp_str} - {e}")
+                print(f"PowerChimeタイムスタンプ解析エラー: {timestamp_str} - {e}")
                 continue
 
         self.events = events
@@ -185,29 +152,29 @@ class AdvancedLoginwindowAnalyzer:
     def calculate_session_durations(self):
         """セッション時間を計算（午前5時を1日の区切りとする）"""
         sessions = []
-        current_start = None
+        current_wake = None
 
         for event in sorted(self.events, key=lambda x: x['timestamp']):
-            if event['event_type'] == 'start':
-                if current_start is None:
-                    current_start = event['timestamp']
-            elif event['event_type'] == 'end' and current_start is not None:
-                duration = event['timestamp'] - current_start
+            # PowerChimeのWake/Sleepセッション計算
+            if event['event_type'] == 'wake':
+                if current_wake is None:
+                    current_wake = event['timestamp']
+            elif event['event_type'] == 'sleep' and current_wake is not None:
+                duration = event['timestamp'] - current_wake
 
                 # 午前5時を1日の区切りとして日付を取得
-                # 午前5時前は前日として扱う
                 if event['timestamp'].hour < 5:
                     date = event['timestamp'].date() - timedelta(days=1)
                 else:
                     date = event['timestamp'].date()
 
                 sessions.append({
-                    'start_time': current_start,
+                    'start_time': current_wake,
                     'end_time': event['timestamp'],
                     'duration_minutes': duration.total_seconds() / 60,
                     'date': date
                 })
-                current_start = None
+                current_wake = None
 
         return sessions
 
@@ -215,7 +182,7 @@ class AdvancedLoginwindowAnalyzer:
         """統計情報を生成"""
         stats = {
             'total_days': len(df),
-            'days_with_activity': len(df[df['start_count'] > 0]),
+            'days_with_activity': len(df[df['wake_count'] > 0]),
             'total_sessions': len(sessions),
             'avg_sessions_per_day': len(sessions) / len(df) if len(df) > 0 else 0,
             'avg_session_duration': np.mean([s['duration_minutes'] for s in sessions]) if sessions else 0,
@@ -351,7 +318,7 @@ class AdvancedLoginwindowAnalyzer:
     def print_detailed_summary(self, df, sessions, stats):
         """詳細なサマリーを表示"""
         print("\n" + "="*60)
-        print("詳細なLoginwindowログ解析結果")
+        print("詳細なPowerChimeログ解析結果")
         print("="*60)
 
         print(f"\n📊 基本統計:")
@@ -373,33 +340,43 @@ class AdvancedLoginwindowAnalyzer:
             print(f"  標準偏差: {np.std(durations):.1f} 分")
 
         print(f"\n📅 日毎の詳細:")
-        print("日付\t\t最初の開始\t最後の終了\tセッション数\t使用時間")
-        print("-" * 80)
+        print("日付\t\t最初のWake\t最後のSleep\tWake回数\tSleep回数\tセッション数\t使用時間")
+        print("-" * 100)
 
         for _, row in df.iterrows():
             start_time = row['first_start_time'].strftime('%H:%M:%S') if pd.notna(row['first_start_time']) else 'N/A'
             end_time = row['last_end_time'].strftime('%H:%M:%S') if pd.notna(row['last_end_time']) else 'N/A'
+            wake_count = row.get('wake_count', 0) if pd.notna(row.get('wake_count')) else 0
+            sleep_count = row.get('sleep_count', 0) if pd.notna(row.get('sleep_count')) else 0
             session_count = row.get('session_count', 0) if pd.notna(row.get('session_count')) else 0
             usage_hours = row.get('total_duration_min', 0) / 60 if pd.notna(row.get('total_duration_min')) else 0
 
-            print(f"{row['date']}\t{start_time}\t\t{end_time}\t\t{session_count}\t\t{usage_hours:.1f}h")
+            print(f"{row['date']}\t{start_time}\t\t{end_time}\t\t{wake_count}\t\t{sleep_count}\t\t{session_count}\t\t{usage_hours:.1f}h")
+
+        # PowerChimeイベントの詳細表示
+        if self.events:
+            print(f"\n🔋 PowerChimeイベント詳細:")
+            print("日付\t\t時間\t\tイベントタイプ\tメッセージ")
+            print("-" * 100)
+            for event in sorted(self.events, key=lambda x: x['timestamp'])[:20]:  # 最初の20件を表示
+                print(f"{event['date']}\t{event['time']}\t{event['event_type']}\t\t{event['message'][:50]}...")
 
 
 @click.command()
 @click.option('--days', '-d', default=7, help='分析する日数（デフォルト: 7日）')
-@click.option('--output', '-o', default='advanced_loginwindow_analysis.csv', help='出力CSVファイル名')
+@click.option('--output', '-o', default='powerchime_analysis.csv', help='出力CSVファイル名')
 @click.option('--output-dir', default='.', help='グラフ出力ディレクトリ')
 @click.option('--verbose', '-v', is_flag=True, help='詳細なログを表示')
 @click.option('--no-graphs', is_flag=True, help='グラフ生成をスキップ')
 def main(days, output, output_dir, verbose, no_graphs):
-    """高度なLoginwindowログ解析を実行"""
+    """高度なPowerChimeログ解析を実行"""
 
-    print(f"高度なLoginwindowログ解析を開始します（過去{days}日分）")
+    print(f"高度なPowerChimeログ解析を開始します（過去{days}日分）")
 
-    analyzer = AdvancedLoginwindowAnalyzer()
+    analyzer = PowerChimeAnalyzer()
 
     # ログを取得
-    if not analyzer.get_loginwindow_logs(days):
+    if not analyzer.get_powerchime_logs(days):
         print("ログの取得に失敗しました")
         return
 
@@ -428,16 +405,16 @@ def main(days, output, output_dir, verbose, no_graphs):
             daily_data[date] = {
                 'first_start': None,
                 'last_end': None,
-                'start_events': [],
-                'end_events': []
+                'wake_events': [],
+                'sleep_events': []
             }
 
-        if event['event_type'] == 'start':
-            daily_data[date]['start_events'].append(event['timestamp'])
+        if event['event_type'] == 'wake':
+            daily_data[date]['wake_events'].append(event['timestamp'])
             if daily_data[date]['first_start'] is None:
                 daily_data[date]['first_start'] = event['timestamp']
-        else:  # end event
-            daily_data[date]['end_events'].append(event['timestamp'])
+        else:  # sleep event
+            daily_data[date]['sleep_events'].append(event['timestamp'])
             if daily_data[date]['last_end'] is None or event['timestamp'] > daily_data[date]['last_end']:
                 daily_data[date]['last_end'] = event['timestamp']
 
@@ -450,8 +427,8 @@ def main(days, output, output_dir, verbose, no_graphs):
             'last_end_time': data['last_end'].time() if data['last_end'] else None,
             'first_start_datetime': data['first_start'],
             'last_end_datetime': data['last_end'],
-            'start_count': len(data['start_events']),
-            'end_count': len(data['end_events'])
+            'wake_count': len(data['wake_events']),
+            'sleep_count': len(data['sleep_events'])
         })
 
     df = pd.DataFrame(results).sort_values('date')

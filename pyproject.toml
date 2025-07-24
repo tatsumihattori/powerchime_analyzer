@@ -1,7 +1,7 @@
 [project]
 name = "kh_screenlock"
 version = "0.1.0"
-description = "Loginwindow log analyzer for screen lock/unlock times"
+description = "PowerChime log analyzer for wake/sleep times"
 authors = [
     {name = "Your Name", email = "your.email@example.com"}
 ]

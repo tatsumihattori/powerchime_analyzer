@@ -1,27 +1,25 @@
 #!/bin/bash
 
-# Loginwindow Log Analyzer Setup Script
+# PowerChime Log Analyzer Setup Script
+# macOSのPowerChimeログを解析するためのセットアップスクリプト
 
 set -e
 
-echo "🚀 Loginwindow Log Analyzer セットアップ開始"
-echo "=========================================="
-
 # 色付きの出力関数
-print_success() {
-    echo -e "\033[32m✅ $1\033[0m"
-}
-
-print_error() {
-    echo -e "\033[31m❌ $1\033[0m"
-}
-
 print_info() {
-    echo -e "\033[34mℹ️  $1\033[0m"
+    echo -e "\033[1;34mℹ️  $1\033[0m"
+}
+
+print_success() {
+    echo -e "\033[1;32m✅ $1\033[0m"
 }
 
 print_warning() {
-    echo -e "\033[33m⚠️  $1\033[0m"
+    echo -e "\033[1;33m⚠️  $1\033[0m"
+}
+
+print_error() {
+    echo -e "\033[1;31m❌ $1\033[0m"
 }
 
 # 前提条件チェック
@@ -36,7 +34,7 @@ check_prerequisites() {
 
     # Pythonチェック
     if ! command -v python3 &> /dev/null; then
-        print_error "Python3がインストールされていません"
+        print_error "Python 3が必要です"
         exit 1
     fi
 
@@ -47,10 +45,10 @@ check_prerequisites() {
         exit 1
     fi
 
-    # Voltaチェック
-    if ! command -v volta &> /dev/null; then
-        print_warning "Voltaがインストールされていません"
-        print_info "Voltaをインストールしてください: https://volta.sh/"
+    # logコマンドチェック
+    if ! command -v log &> /dev/null; then
+        print_error "logコマンドが見つかりません（macOSのシステムログツール）"
+        exit 1
     fi
 
     print_success "前提条件チェック完了"
@@ -62,14 +60,15 @@ install_dependencies() {
 
     if [ -f "pyproject.toml" ]; then
         rye sync
-        print_success "Python依存関係をインストールしました"
+        print_success "依存関係をインストールしました"
     else
-        print_error "pyproject.tomlが見つかりません"
-        exit 1
+        print_warning "pyproject.tomlが見つかりません"
+        print_info "手動で依存関係をインストールしてください:"
+        echo "  pip install pandas click matplotlib seaborn numpy"
     fi
 }
 
-# スクリプトの実行権限を設定
+# 実行権限の設定
 set_permissions() {
     print_info "スクリプトの実行権限を設定中..."
 
@@ -80,14 +79,14 @@ set_permissions() {
     print_success "実行権限を設定しました"
 }
 
-# ログアクセステスト
+# PowerChimeログアクセステスト
 test_log_access() {
-    print_info "ログアクセスをテスト中..."
+    print_info "PowerChimeログアクセスをテスト中..."
 
-    if log show --predicate 'process == "loginwindow"' --last 1h --style json &> /dev/null; then
-        print_success "ログアクセス: 成功"
+    if log show --predicate 'process == "PowerChime"' --last 1h --style json &> /dev/null; then
+        print_success "PowerChimeログアクセス: 成功"
     else
-        print_warning "ログアクセス: 失敗"
+        print_warning "PowerChimeログアクセス: 失敗"
         print_info "管理者権限が必要な場合があります"
         print_info "sudo python loginwindow_analyzer.py で実行してみてください"
     fi

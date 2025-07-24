@@ -1,12 +1,12 @@
-# Loginwindow Log Analyzer
+# PowerChime Log Analyzer
 
-macOSのloginwindowログを解析して、日毎の画面開始・終了時間を集計するツールです。
+macOSのPowerChimeログを解析して、日毎のWake/Sleep時間を集計するツールです。
 
 ## 機能
 
-- macOSのシステムログからloginwindow関連のログを自動取得
-- 日毎の最初の画面開始時間と最後の終了時間を集計
-- 開始・終了イベントの回数も記録
+- macOSのシステムログからPowerChime関連のログを自動取得
+- 日毎の最初のWake時間と最後のSleep時間を集計
+- Wake/Sleepイベントの回数も記録
 - 結果をCSVファイルに出力
 - 詳細なログ表示オプション
 - **高度な解析機能**（セッション時間計算、統計情報、グラフ生成）
@@ -15,13 +15,13 @@ macOSのloginwindowログを解析して、日毎の画面開始・終了時間�
 
 ### 1. 基本的な解析ツール (`loginwindow_analyzer.py`)
 
-- シンプルな日毎の開始・終了時間集計
+- シンプルな日毎のWake/Sleep時間集計
 - CSVファイル出力
 - 基本的な統計情報
 
 ### 2. 高度な解析ツール (`advanced_loginwindow_analyzer.py`)
 
-- セッション時間の詳細計算
+- セッション時間の詳細計算（Wake→Sleepのペア）
 - 統計情報の生成（平均、中央値、標準偏差など）
 - グラフとチャートの自動生成
 - 時間帯別・曜日別の分析
@@ -73,13 +73,13 @@ python advanced_loginwindow_analyzer.py
 #### 基本ツール (`loginwindow_analyzer.py`)
 
 - `--days, -d`: 分析する日数（デフォルト: 7日）
-- `--output, -o`: 出力CSVファイル名（デフォルト: loginwindow_analysis.csv）
+- `--output, -o`: 出力CSVファイル名（デフォルト: powerchime_analysis.csv）
 - `--verbose, -v`: 詳細なログを表示
 
 #### 高度なツール (`advanced_loginwindow_analyzer.py`)
 
 - `--days, -d`: 分析する日数（デフォルト: 7日）
-- `--output, -o`: 出力CSVファイル名（デフォルト: advanced_loginwindow_analysis.csv）
+- `--output, -o`: 出力CSVファイル名（デフォルト: powerchime_analysis.csv）
 - `--output-dir`: グラフ出力ディレクトリ（デフォルト: 現在のディレクトリ）
 - `--verbose, -v`: 詳細なログを表示
 - `--no-graphs`: グラフ生成をスキップ
@@ -133,11 +133,11 @@ python advanced_loginwindow_analyzer.py --output-dir ./graphs
 #### コンソール出力
 
 ```text
-=== 日毎の画面開始・終了時間サマリー ===
+=== 日毎のWake/Sleep時間サマリー ===
 分析期間: 2024-01-01 から 2024-01-07
 総日数: 7 日
 
-日付  最初の開始 最後の終了 開始回数 終了回数
+日付  最初のWake 最後のSleep Wake回数 Sleep回数
 --------------------------------------------------------------------------------
 2024-01-01 08:30:15  22:15:30  5  5
 2024-01-02 09:00:00  21:45:20  3  3
@@ -147,12 +147,12 @@ python advanced_loginwindow_analyzer.py --output-dir ./graphs
 #### CSVファイル出力
 
 - `date`: 日付
-- `first_start_time`: その日の最初の開始時間
-- `last_end_time`: その日の最後の終了時間
-- `first_start_datetime`: 開始日時（完全）
-- `last_end_datetime`: 終了日時（完全）
-- `start_count`: 開始イベントの回数
-- `end_count`: 終了イベントの回数
+- `first_wake_time`: その日の最初のWake時間
+- `last_sleep_time`: その日の最後のSleep時間
+- `first_wake_datetime`: Wake日時（完全）
+- `last_sleep_datetime`: Sleep日時（完全）
+- `wake_count`: Wakeイベントの回数
+- `sleep_count`: Sleepイベントの回数
 
 ### 高度なツールの出力
 
@@ -160,7 +160,7 @@ python advanced_loginwindow_analyzer.py --output-dir ./graphs
 
 ```text
 ============================================================
-詳細なLoginwindowログ解析結果
+詳細なPowerChimeログ解析結果
 ============================================================
 
 📊 基本統計:
@@ -204,6 +204,7 @@ python test_analyzer.py
 - ログの取得には`log show`コマンドを使用します
 - システムの設定によっては、一部のログが取得できない場合があります
 - グラフ生成には`matplotlib`と`seaborn`が必要です
+- PowerChimeのDid WakeとDid Sleepイベントを解析します
 
 ## トラブルシューティング
 
@@ -218,12 +219,12 @@ sudo python loginwindow_analyzer.py
 2. システムログの設定を確認してください:
 
 ```bash
-log show --predicate 'process == "loginwindow"' --last 1d
+log show --predicate 'process == "PowerChime"' --last 1d
 ```
 
 ### イベントが検出されない場合
 
-`--verbose`オプションを使用して、実際に取得されているログメッセージを確認してください。必要に応じて、`loginwindow_analyzer.py`の`start_patterns`と`end_patterns`を調整してください。
+`--verbose`オプションを使用して、実際に取得されているログメッセージを確認してください。必要に応じて、`loginwindow_analyzer.py`の`wake_patterns`と`sleep_patterns`を調整してください。
 
 ### グラフが生成されない場合
 
@@ -233,12 +234,12 @@ log show --predicate 'process == "loginwindow"' --last 1d
 rye sync
 ```
 
-2. `--no-graphs`オプションを使用してグラフ生成をスキップ:
+2. matplotlibのバックエンドを確認:
 
 ```bash
-python advanced_loginwindow_analyzer.py --no-graphs
+python -c "import matplotlib; print(matplotlib.get_backend())"
 ```
 
 ## ライセンス
 
-MIT License
+このプロジェクトはMITライセンスの下で公開されています。
