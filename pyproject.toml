@@ -1,5 +1,5 @@
 [project]
-name = "kh_screenlock"
+name = "powerchime-log-analyzer"
 version = "0.1.0"
 description = "PowerChime log analyzer for wake/sleep times"
 authors = [

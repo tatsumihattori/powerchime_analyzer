@@ -69,6 +69,12 @@ class PowerChimeAnalyzer:
 
             print(f"取得したPowerChimeログエントリ数: {len(self.powerchime_entries)}")
 
+        except subprocess.CalledProcessError as e:
+            print(f"ログ取得エラー: {e}")
+            return False
+        except json.JSONDecodeError as e:
+            print(f"JSON解析エラー: {e}")
+            return False
         except Exception as e:
             print(f"PowerChimeログ取得エラー: {e}")
             return False
@@ -440,7 +446,7 @@ def main(days, output, output_dir, verbose, no_graphs):
     analyzer.print_detailed_summary(df, sessions, stats)
 
     # 結果を保存
-    # analyzer.save_detailed_results(df, sessions, stats, output)
+    analyzer.save_detailed_results(df, sessions, stats, output)
 
     # グラフを生成
     if not no_graphs:

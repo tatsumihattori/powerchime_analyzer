@@ -13,13 +13,13 @@ macOSのPowerChimeログを解析して、日毎のWake/Sleep時間を集計す�
 
 ## ツール構成
 
-### 1. 基本的な解析ツール (`loginwindow_analyzer.py`)
+### 1. 基本的な解析ツール (`powerchime_analyzer.py`)
 
 - シンプルな日毎のWake/Sleep時間集計
 - CSVファイル出力
 - 基本的な統計情報
 
-### 2. 高度な解析ツール (`advanced_loginwindow_analyzer.py`)
+### 2. 高度な解析ツール (`advanced_powerchime_analyzer.py`)
 
 - セッション時間の詳細計算（Wake→Sleepのペア）
 - 統計情報の生成（平均、中央値、標準偏差など）
@@ -46,8 +46,8 @@ rye sync
 2. スクリプトを実行可能にする:
 
 ```bash
-chmod +x loginwindow_analyzer.py
-chmod +x advanced_loginwindow_analyzer.py
+chmod +x powerchime_analyzer.py
+chmod +x advanced_powerchime_analyzer.py
 ```
 
 ## 使用方法
@@ -57,7 +57,7 @@ chmod +x advanced_loginwindow_analyzer.py
 過去7日分のログを解析:
 
 ```bash
-python loginwindow_analyzer.py
+python powerchime_analyzer.py
 ```
 
 ### 高度な解析
@@ -65,18 +65,18 @@ python loginwindow_analyzer.py
 過去7日分のログを詳細解析（グラフ付き）:
 
 ```bash
-python advanced_loginwindow_analyzer.py
+python advanced_powerchime_analyzer.py
 ```
 
 ### オプション
 
-#### 基本ツール (`loginwindow_analyzer.py`)
+#### 基本ツール (`powerchime_analyzer.py`)
 
 - `--days, -d`: 分析する日数（デフォルト: 7日）
 - `--output, -o`: 出力CSVファイル名（デフォルト: powerchime_analysis.csv）
 - `--verbose, -v`: 詳細なログを表示
 
-#### 高度なツール (`advanced_loginwindow_analyzer.py`)
+#### 高度なツール (`advanced_powerchime_analyzer.py`)
 
 - `--days, -d`: 分析する日数（デフォルト: 7日）
 - `--output, -o`: 出力CSVファイル名（デフォルト: powerchime_analysis.csv）
@@ -91,19 +91,19 @@ python advanced_loginwindow_analyzer.py
 過去30日分のログを解析:
 
 ```bash
-python loginwindow_analyzer.py --days 30
+python powerchime_analyzer.py --days 30
 ```
 
 結果を別のファイル名で保存:
 
 ```bash
-python loginwindow_analyzer.py --output my_analysis.csv
+python powerchime_analyzer.py --output my_analysis.csv
 ```
 
 詳細なログを表示:
 
 ```bash
-python loginwindow_analyzer.py --verbose
+python powerchime_analyzer.py --verbose
 ```
 
 #### 高度なツール
@@ -111,19 +111,19 @@ python loginwindow_analyzer.py --verbose
 過去30日分のログを詳細解析:
 
 ```bash
-python advanced_loginwindow_analyzer.py --days 30
+python advanced_powerchime_analyzer.py --days 30
 ```
 
 グラフなしで解析:
 
 ```bash
-python advanced_loginwindow_analyzer.py --no-graphs
+python advanced_powerchime_analyzer.py --no-graphs
 ```
 
 グラフを別ディレクトリに出力:
 
 ```bash
-python advanced_loginwindow_analyzer.py --output-dir ./graphs
+python advanced_powerchime_analyzer.py --output-dir ./graphs
 ```
 
 ## 出力形式
@@ -213,7 +213,7 @@ python test_analyzer.py
 1. 管理者権限で実行してみてください:
 
 ```bash
-sudo python loginwindow_analyzer.py
+sudo python powerchime_analyzer.py
 ```
 
 2. システムログの設定を確認してください:
@@ -224,7 +224,7 @@ log show --predicate 'process == "PowerChime"' --last 1d
 
 ### イベントが検出されない場合
 
-`--verbose`オプションを使用して、実際に取得されているログメッセージを確認してください。必要に応じて、`loginwindow_analyzer.py`の`wake_patterns`と`sleep_patterns`を調整してください。
+`--verbose`オプションを使用して、実際に取得されているログメッセージを確認してください。必要に応じて、`powerchime_analyzer.py`の`wake_patterns`と`sleep_patterns`を調整してください。
 
 ### グラフが生成されない場合
 

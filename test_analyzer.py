@@ -18,7 +18,7 @@ def test_basic_analyzer():
     try:
         # 過去1日分のログでテスト
         result = subprocess.run([
-            sys.executable, 'loginwindow_analyzer.py',
+            sys.executable, 'powerchime_analyzer.py',
             '--days', '1',
             '--output', 'test_basic_output.csv',
             '--verbose'
@@ -44,7 +44,7 @@ def test_advanced_analyzer():
     try:
         # 過去1日分のログでテスト（グラフなし）
         result = subprocess.run([
-            sys.executable, 'advanced_loginwindow_analyzer.py',
+            sys.executable, 'advanced_powerchime_analyzer.py',
             '--days', '1',
             '--output', 'test_advanced_output.csv',
             '--no-graphs',
@@ -146,6 +146,21 @@ def cleanup_test_files():
     ]
 
     for file in test_files:
+        if os.path.exists(file):
+            os.remove(file)
+            print(f"  削除: {file}")
+        else:
+            print(f"  存在しない: {file}")
+
+    # グラフファイルもクリーンアップ
+    graph_files = [
+        'daily_usage.png',
+        'hourly_sessions.png',
+        'session_duration_distribution.png',
+        'weekday_pattern.png'
+    ]
+
+    for file in graph_files:
         if os.path.exists(file):
             os.remove(file)
             print(f"  削除: {file}")

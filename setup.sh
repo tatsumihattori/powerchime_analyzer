@@ -72,8 +72,8 @@ install_dependencies() {
 set_permissions() {
     print_info "スクリプトの実行権限を設定中..."
 
-    chmod +x loginwindow_analyzer.py
-    chmod +x advanced_loginwindow_analyzer.py
+    chmod +x powerchime_analyzer.py
+    chmod +x advanced_powerchime_analyzer.py
     chmod +x test_analyzer.py
 
     print_success "実行権限を設定しました"
@@ -88,7 +88,7 @@ test_log_access() {
     else
         print_warning "PowerChimeログアクセス: 失敗"
         print_info "管理者権限が必要な場合があります"
-        print_info "sudo python loginwindow_analyzer.py で実行してみてください"
+        print_info "sudo python powerchime_analyzer.py で実行してみてください"
     fi
 }
 
@@ -99,19 +99,19 @@ show_usage_examples() {
     echo "=========="
     echo ""
     echo "基本的な解析（過去7日分）:"
-    echo "  python loginwindow_analyzer.py"
+    echo "  python powerchime_analyzer.py"
     echo ""
     echo "過去30日分の詳細解析:"
-    echo "  python advanced_loginwindow_analyzer.py --days 30"
+    echo "  python advanced_powerchime_analyzer.py --days 30"
     echo ""
     echo "結果を別のファイルに保存:"
-    echo "  python loginwindow_analyzer.py --output my_analysis.csv"
+    echo "  python powerchime_analyzer.py --output my_analysis.csv"
     echo ""
     echo "詳細なログを表示:"
-    echo "  python loginwindow_analyzer.py --verbose"
+    echo "  python powerchime_analyzer.py --verbose"
     echo ""
     echo "グラフなしで解析:"
-    echo "  python advanced_loginwindow_analyzer.py --no-graphs"
+    echo "  python advanced_powerchime_analyzer.py --no-graphs"
     echo ""
     echo "テスト実行:"
     echo "  python test_analyzer.py"
