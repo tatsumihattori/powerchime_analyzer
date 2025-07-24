@@ -440,7 +440,7 @@ def main(days, output, output_dir, verbose, no_graphs):
     analyzer.print_detailed_summary(df, sessions, stats)
 
     # 結果を保存
-    analyzer.save_detailed_results(df, sessions, stats, output)
+    # analyzer.save_detailed_results(df, sessions, stats, output)
 
     # グラフを生成
     if not no_graphs:

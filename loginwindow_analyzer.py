@@ -245,7 +245,7 @@ def main(days, output, verbose):
     analyzer.print_summary(df)
 
     # 結果を保存
-    analyzer.save_results(df, output)
+    # analyzer.save_results(df, output)
 
 
 if __name__ == '__main__':
