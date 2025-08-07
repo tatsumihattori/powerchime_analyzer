@@ -189,11 +189,6 @@ class PowerChimeLogAnalyzer:
 
         return pd.DataFrame(results).sort_values('date')
 
-    def save_results(self, df, output_file):
-        """結果をCSVファイルに保存"""
-        df.to_csv(output_file, index=False, encoding='utf-8')
-        print(f"結果を保存しました: {output_file}")
-
     def print_summary(self, df):
         """結果のサマリーを表示"""
         print("\n=== 日毎のWake/Sleep時間サマリー ===")
@@ -243,9 +238,6 @@ def main(days, output, verbose):
 
     # 結果を表示
     analyzer.print_summary(df)
-
-    # 結果を保存
-    analyzer.save_results(df, output)
 
 
 if __name__ == '__main__':

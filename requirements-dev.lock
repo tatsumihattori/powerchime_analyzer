@@ -10,46 +10,36 @@
 #   universal: false
 
 -e file:.
+altgraph==0.17.4
+    # via macholib
+    # via pyinstaller
 click==8.1.8
-    # via kh-screenlock
-contourpy==1.1.1
-    # via matplotlib
-cycler==0.12.1
-    # via matplotlib
-fonttools==4.57.0
-    # via matplotlib
-importlib-resources==6.4.5
-    # via matplotlib
-kiwisolver==1.4.7
-    # via matplotlib
-matplotlib==3.7.5
-    # via kh-screenlock
-    # via seaborn
+    # via powerchime-log-analyzer
+importlib-metadata==8.5.0
+    # via pyinstaller
+    # via pyinstaller-hooks-contrib
+macholib==1.16.3
+    # via pyinstaller
 numpy==1.24.4
-    # via contourpy
-    # via kh-screenlock
-    # via matplotlib
     # via pandas
-    # via seaborn
 packaging==25.0
-    # via matplotlib
+    # via pyinstaller
+    # via pyinstaller-hooks-contrib
 pandas==2.0.3
-    # via kh-screenlock
-    # via seaborn
-pillow==10.4.0
-    # via matplotlib
-pyparsing==3.1.4
-    # via matplotlib
+    # via powerchime-log-analyzer
+pyinstaller==6.15.0
+pyinstaller-hooks-contrib==2025.8
+    # via pyinstaller
 python-dateutil==2.9.0.post0
-    # via matplotlib
     # via pandas
 pytz==2025.2
     # via pandas
-seaborn==0.13.2
-    # via kh-screenlock
+setuptools==75.3.2
+    # via pyinstaller
+    # via pyinstaller-hooks-contrib
 six==1.17.0
     # via python-dateutil
 tzdata==2025.2
     # via pandas
 zipp==3.20.2
-    # via importlib-resources
+    # via importlib-metadata
