@@ -78,14 +78,6 @@ powerchime-analyzer --days 7 --output results.csv
 ...
 ```
 
-CSVファイルには以下の列が含まれます：
-
-- `date`: 日付（午前5時区切り）
-- `first_wake_time`: 最初のWake時間
-- `last_sleep_time`: 最後のSleep時間
-- `wake_count`: Wake回数
-- `sleep_count`: Sleep回数
-
 ## 日付の取り扱いについて
 
 このツールは午前5時を1日の区切りとして使用します。これにより、夜遅くまで起きている生活パターンでも自然な日毎の集計が可能です。

@@ -3,7 +3,6 @@ name = "powerchime-log-analyzer"
 version = "0.1.0"
 description = "PowerChime log analyzer for wake/sleep times"
 dependencies = [
-    "pandas>=2.0.0",
     "click>=8.0.0",
 ]
 requires-python = ">=3.8"

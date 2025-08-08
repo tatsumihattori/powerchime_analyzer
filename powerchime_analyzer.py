@@ -7,7 +7,6 @@ macOSのPowerChimeログを解析して、日毎のWake/Sleep時間を集計し�
 
 import subprocess
 import re
-import pandas as pd
 from datetime import datetime, timedelta
 import click
 from pathlib import Path
@@ -174,9 +173,9 @@ class PowerChimeLogAnalyzer:
                 if daily_data[date]['last_sleep'] is None or event['timestamp'] > daily_data[date]['last_sleep']:
                     daily_data[date]['last_sleep'] = event['timestamp']
 
-        # DataFrameに変換
+        # 結果をリストとして返す
         results = []
-        for date, data in daily_data.items():
+        for date, data in sorted(daily_data.items()):
             results.append({
                 'date': date,
                 'first_wake_time': data['first_wake'].time() if data['first_wake'] else None,
@@ -187,28 +186,31 @@ class PowerChimeLogAnalyzer:
                 'sleep_count': len(data['sleep_events'])
             })
 
-        return pd.DataFrame(results).sort_values('date')
+        return results
 
-    def print_summary(self, df):
+    def print_summary(self, results):
         """結果のサマリーを表示"""
         print("\n=== 日毎のWake/Sleep時間サマリー ===")
-        print(f"分析期間: {df['date'].min()} から {df['date'].max()}")
-        print(f"総日数: {len(df)} 日")
+        if results:
+            dates = [item['date'] for item in results]
+            print(f"分析期間: {min(dates)} から {max(dates)}")
+            print(f"総日数: {len(results)} 日")
 
-        print("\n日付\t\t最初のWake\t最後のSleep\tWake回数\tSleep回数")
-        print("-" * 80)
+            print("\n日付\t\t最初のWake\t最後のSleep\tWake回数\tSleep回数")
+            print("-" * 80)
 
-        for _, row in df.iterrows():
-            wake_time = row['first_wake_time'].strftime('%H:%M:%S') if row['first_wake_time'] else 'N/A'
-            sleep_time = row['last_sleep_time'].strftime('%H:%M:%S') if row['last_sleep_time'] else 'N/A'
-            print(f"{row['date']}\t{wake_time}\t\t{sleep_time}\t\t{row['wake_count']}\t\t{row['sleep_count']}")
+            for row in results:
+                wake_time = row['first_wake_time'].strftime('%H:%M:%S') if row['first_wake_time'] else 'N/A'
+                sleep_time = row['last_sleep_time'].strftime('%H:%M:%S') if row['last_sleep_time'] else 'N/A'
+                print(f"{row['date']}\t{wake_time}\t\t{sleep_time}\t\t{row['wake_count']}\t\t{row['sleep_count']}")
+        else:
+            print("分析結果がありません")
 
 
 @click.command()
 @click.option('--days', '-d', default=7, help='分析する日数（デフォルト: 7日）')
-@click.option('--output', '-o', default='powerchime_analysis.csv', help='出力CSVファイル名')
 @click.option('--verbose', '-v', is_flag=True, help='詳細なログを表示')
-def main(days, output, verbose):
+def main(days, verbose):
     """PowerChimeログを解析して日毎のWake/Sleep時間を集計"""
 
     print(f"PowerChimeログ解析を開始します（過去{days}日分）")
@@ -234,10 +236,10 @@ def main(days, output, verbose):
         return
 
     # 日毎に集計
-    df = analyzer.aggregate_daily_times(events)
+    results = analyzer.aggregate_daily_times(events)
 
     # 結果を表示
-    analyzer.print_summary(df)
+    analyzer.print_summary(results)
 
 
 if __name__ == '__main__':

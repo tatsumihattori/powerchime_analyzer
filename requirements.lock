@@ -12,15 +12,3 @@
 -e file:.
 click==8.1.8
     # via powerchime-log-analyzer
-numpy==1.24.4
-    # via pandas
-pandas==2.0.3
-    # via powerchime-log-analyzer
-python-dateutil==2.9.0.post0
-    # via pandas
-pytz==2025.2
-    # via pandas
-six==1.17.0
-    # via python-dateutil
-tzdata==2025.2
-    # via pandas
