@@ -11,7 +11,6 @@ macOSのPowerChimeログを解析して、日毎のWake/Sleep時間を集計す�
 - PowerChimeログの自動取得と解析
 - 日毎の最初のWake時間と最後のSleep時間の抽出
 - Wake/Sleepイベントの回数カウント
-- CSV形式でのデータ出力
 - 指定期間でのデータ分析（デフォルト7日間）
 
 ## 必要な環境
@@ -42,8 +41,7 @@ python powerchime_analyzer.py
 # 特定の日数を指定
 python powerchime_analyzer.py --days 14
 
-# 出力ファイル名を指定
-python powerchime_analyzer.py --output my_analysis.csv
+
 
 # 詳細なログを表示
 python powerchime_analyzer.py --verbose
@@ -53,13 +51,12 @@ python powerchime_analyzer.py --verbose
 
 ```bash
 # Ryeでインストール後は以下のコマンドで実行可能
-powerchime-analyzer --days 7 --output results.csv
+powerchime-analyzer --days 7
 ```
 
 ## オプション
 
 - `--days, -d`: 分析する日数（デフォルト: 7日）
-- `--output, -o`: 出力CSVファイル名（デフォルト: powerchime_analysis.csv）
 - `--verbose, -v`: 詳細なログを表示
 
 ## 出力形式
